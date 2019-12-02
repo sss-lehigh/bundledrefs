@@ -137,6 +137,7 @@ typedef skiplist<KEY_TYPE, VALUE_TYPE, RECORD_MANAGER_TYPE> INDEX_TYPE;
 
 #elif (INDEX_STRUCT == IDX_SKIPLISTLOCK_RQ_BUNDLE)
 #define KEY_PRECEEDING(key) (key - 1)
+#define BUNDLE_MAX_BUNDLES_UPDATED 2
 #include "bundle_skiplist_impl.h"
 typedef node_t<KEY_TYPE, VALUE_TYPE> NODE_TYPE;
 typedef bool DESCRIPTOR_TYPE;  // no descriptor
