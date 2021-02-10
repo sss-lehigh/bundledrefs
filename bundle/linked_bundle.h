@@ -113,7 +113,7 @@ class Bundle : public BundleInterface<NodeType> {
   }
 
   // Returns a reference to the node that immediately followed at timestamp ts.
-  inline NodeType *getPtrByTimestamp(timestamp_t ts) override {
+  inline bool getPtrByTimestamp(timestamp_t ts, NodeType** next) override {
     // Start at head and work backwards until edge is found.
     BundleEntry<NodeType> *curr = head_;
     long i = 0;
@@ -131,7 +131,11 @@ class Bundle : public BundleInterface<NodeType> {
       exit(1);
     }
 #endif
-    return curr->ptr_;
+    if (curr != tail_) {
+      *next = curr->ptr_;
+      return true;
+    }
+    return false;
   }
 
   // Reclaims any edges that are older than ts. At the moment this should be

@@ -442,6 +442,7 @@ int bundle_citrustree<K, V, RecManager>::rangeQuery(const int tid, const K& lo,
     nodeptr pred = nullptr;
     int direction = -1;
     bool range_found = false;
+    bool ok;
     while (curr != nullptr) {
       if (curr->key >= lo && curr->key <= hi) {
         // Phase 2. Enter the range.
@@ -450,7 +451,7 @@ int bundle_citrustree<K, V, RecManager>::rangeQuery(const int tid, const K& lo,
         // update may have deleted curr, so we cannot guarantee that curr is in
         // the range. We can however guarantee that the range is contained in
         // the subtree rooted at this node.
-        curr = pred->rqbundle[direction]->getPtrByTimestamp(ts);
+        ok = pred->rqbundle[direction]->getPtrByTimestamp(ts, &curr);
         break;
       } else if (curr->key < lo) {
         // Phase 1. Search right subtree.
@@ -466,7 +467,7 @@ int bundle_citrustree<K, V, RecManager>::rangeQuery(const int tid, const K& lo,
     }
 
     // No keys exist in the range.
-    if (curr == nullptr) {
+    if (curr == nullptr || !ok) {
       rqProvider->end_traversal(tid);
       recordmgr->enterQuiescentState(tid);
       if (!range_found) {
@@ -474,6 +475,7 @@ int bundle_citrustree<K, V, RecManager>::rangeQuery(const int tid, const K& lo,
         return 0;
       }
     } else if (curr != nullptr) {
+      assert(ok);
       // Phase 3. Collect the result set.
       block<node_t<K, V>> stack(nullptr);
       int cnt = 0;
@@ -490,8 +492,12 @@ int bundle_citrustree<K, V, RecManager>::rangeQuery(const int tid, const K& lo,
         }
 
         // Explore subtrees with DFS based on timestamp and range.
-        nodeptr left = node->rqbundle[0]->getPtrByTimestamp(ts);
-        nodeptr right = node->rqbundle[1]->getPtrByTimestamp(ts);
+        nodeptr left;
+        nodeptr right;
+        ok = node->rqbundle[0]->getPtrByTimestamp(ts, &left);
+        assert(ok);
+        ok = node->rqbundle[1]->getPtrByTimestamp(ts, &right);
+        assert(ok);
         if (left != nullptr && lo < node->key) {
           stack.push(left);
         }

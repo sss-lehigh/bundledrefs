@@ -33,7 +33,7 @@ class BundleInterface {
   virtual void finalize(timestamp_t ts) = 0;
 
   // Returns a reference to the node which was valid at timestamp, ts.
-  virtual NodeType *getPtrByTimestamp(timestamp_t ts) = 0;
+  virtual bool getPtrByTimestamp(timestamp_t ts, NodeType **next) = 0;
 
   // Removes all entries that are older than the first entry that is at least as
   // old as the provided timestamp.
